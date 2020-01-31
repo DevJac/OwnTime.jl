@@ -1,3 +1,5 @@
+module OwnProfile
+
 using Profile
 using StatsBase
 
@@ -9,7 +11,7 @@ function fetch()
     return data, len == maxlen
 end
 
-function profile_backtraces(;warn_on_full_profile_data_buffer=true)
+function backtraces(;warn_on_full_profile_data_buffer=true)
     profile_pointers, full_buffer = fetch()
     if warn_on_full_profile_data_buffer && full_buffer
         @warn """The profile data buffer is full; profiling probably terminated
@@ -29,12 +31,12 @@ function profile_backtraces(;warn_on_full_profile_data_buffer=true)
     end
 end
 
-function profile_stacktraces(;warn_on_full_profile_data_buffer=true)
+function stacktraces(;warn_on_full_profile_data_buffer=true)
     backtraces = profile_backtraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
     profile_stacktraces(backtraces, warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
 end
 
-function profile_stacktraces(backtraces; warn_on_full_profile_data_buffer=true)
+function stacktraces(backtraces; warn_on_full_profile_data_buffer=true)
     map(backtraces) do backtrace
         filter(reduce(vcat, StackTraces.lookup.(backtrace))) do stackframe
             stackframe.from_c == false
@@ -42,12 +44,12 @@ function profile_stacktraces(backtraces; warn_on_full_profile_data_buffer=true)
     end
 end
 
-function own_time(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
+function owntime(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     stacktraces = profile_stacktraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
     own_time(stacktraces, stackframe_filter; warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
 end
 
-function own_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
+function owntime(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
@@ -55,14 +57,16 @@ function own_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_ful
     countmap(reduce(vcat, first.(nonempty_stacktraces)))
 end
 
-function total_time(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
+function totaltime(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     stacktraces = profile_stacktraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
     total_time(stacktraces, stackframe_filter, warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
 end
 
-function total_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
+function totaltime(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
     countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
 end
+
+end # module
