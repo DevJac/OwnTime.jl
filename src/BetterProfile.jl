@@ -64,5 +64,5 @@ function total_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_f
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
-    countmap(reduce(vcat, filtered_stacktraces))
+    countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
 end
