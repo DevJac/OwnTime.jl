@@ -31,6 +31,10 @@ end
 
 function profile_stacktraces(;warn_on_full_profile_data_buffer=true)
     backtraces = profile_backtraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+    profile_stacktraces(backtraces, warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+end
+
+function profile_stacktraces(backtraces; warn_on_full_profile_data_buffer=true)
     map(backtraces) do backtrace
         filter(reduce(vcat, StackTraces.lookup.(backtrace))) do stackframe
             stackframe.from_c == false
@@ -40,6 +44,10 @@ end
 
 function own_time(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     stacktraces = profile_stacktraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+    own_time(stacktraces, stackframe_filter; warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+end
+
+function own_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
@@ -49,6 +57,10 @@ end
 
 function total_time(stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     stacktraces = profile_stacktraces(warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+    total_time(stacktraces, stackframe_filter, warn_on_full_profile_data_buffer=warn_on_full_profile_data_buffer)
+end
+
+function total_time(stacktraces, stackframe_filter=stackframe -> true; warn_on_full_profile_data_buffer=true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
