@@ -2,6 +2,7 @@ module OwnTime
 
 export owntime, totaltime, filecontains
 
+using Printf
 using Profile
 using StatsBase
 
@@ -59,17 +60,48 @@ function stacktraces(backtraces; warn_on_full_buffer=true)
     sts
 end
 
+function owncounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    owncounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+end
+
+function owncounts(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+    filtered_stacktraces = map(stacktraces) do stackframes
+        filter(stackframe_filter, stackframes)
+    end
+    nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
+    countmap(reduce(vcat, first.(nonempty_stacktraces)))
+end
+
+function totalcounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    totalcounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+end
+
+function totalcounts(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+    filtered_stacktraces = map(stacktraces) do stackframes
+        filter(stackframe_filter, stackframes)
+    end
+    countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
+end
+
+function prettyprint(counts, total)
+    for (stackframe, count) in sort(collect(counts), by=pair -> pair.second, rev=true)
+        percent_of_time = round(count / total * 100)
+        if percent_of_time >= 1
+            @printf("%3d%%: %s\n", percent_of_time, stackframe)
+        end
+    end
+end
+
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
     owntime(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
 end
 
 function owntime(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    filtered_stacktraces = map(stacktraces) do stackframes
-        filter(stackframe_filter, stackframes)
-    end
-    nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
-    countmap(reduce(vcat, first.(nonempty_stacktraces)))
+    counts = owncounts(stacktraces; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    prettyprint(counts, length(stacktraces))
 end
 
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
@@ -78,10 +110,8 @@ function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=tr
 end
 
 function totaltime(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    filtered_stacktraces = map(stacktraces) do stackframes
-        filter(stackframe_filter, stackframes)
-    end
-    countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
+    counts = totalcounts(stacktraces; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    prettyprint(counts, length(stacktraces))
 end
 
 function filecontains(needle)
