@@ -55,11 +55,11 @@ function stacktraces(;warn_on_full_buffer=true)
         state.last_stacktraces
     else
         bts = backtraces(warn_on_full_buffer=warn_on_full_buffer)
-        stacktraces(bts, warn_on_full_buffer=warn_on_full_buffer)
+        stacktraces(bts)
     end
 end
 
-function stacktraces(backtraces; warn_on_full_buffer=true)
+function stacktraces(backtraces)
     sts = map(backtraces) do backtrace
         filter(reduce(vcat, StackTraces.lookup.(backtrace))) do stackframe
             stackframe.from_c == false
@@ -71,10 +71,10 @@ end
 
 function owncounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
-    owncounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    owncounts(sts; stackframe_filter=stackframe_filter)
 end
 
-function owncounts(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+function owncounts(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
@@ -84,10 +84,10 @@ end
 
 function totalcounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
-    totalcounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    totalcounts(sts; stackframe_filter=stackframe_filter)
 end
 
-function totalcounts(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
+function totalcounts(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
@@ -105,21 +105,21 @@ end
 
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
-    owntime(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    owntime(sts; stackframe_filter=stackframe_filter)
 end
 
-function owntime(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    counts = owncounts(stacktraces; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+function owntime(stacktraces; stackframe_filter=stackframe -> true)
+    counts = owncounts(stacktraces; stackframe_filter=stackframe_filter)
     prettyprint(counts, length(stacktraces))
 end
 
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
-    totaltime(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+    totaltime(sts; stackframe_filter=stackframe_filter)
 end
 
-function totaltime(stacktraces; stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    counts = totalcounts(stacktraces; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
+function totaltime(stacktraces; stackframe_filter=stackframe -> true)
+    counts = totalcounts(stacktraces; stackframe_filter=stackframe_filter)
     prettyprint(counts, length(stacktraces))
 end
 
