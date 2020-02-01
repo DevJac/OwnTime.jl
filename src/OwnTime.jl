@@ -51,8 +51,12 @@ function backtraces(;warn_on_full_buffer=true)
 end
 
 function stacktraces(;warn_on_full_buffer=true)
-    bts = backtraces(warn_on_full_buffer=warn_on_full_buffer)
-    stacktraces(bts, warn_on_full_buffer=warn_on_full_buffer)
+    if !new_data() && !isnothing(state.last_stacktraces)
+        state.last_stacktraces
+    else
+        bts = backtraces(warn_on_full_buffer=warn_on_full_buffer)
+        stacktraces(bts, warn_on_full_buffer=warn_on_full_buffer)
+    end
 end
 
 function stacktraces(backtraces; warn_on_full_buffer=true)
@@ -66,7 +70,7 @@ function stacktraces(backtraces; warn_on_full_buffer=true)
 end
 
 function owncounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     owncounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
 end
 
@@ -79,7 +83,7 @@ function owncounts(stacktraces; stackframe_filter=stackframe -> true, warn_on_fu
 end
 
 function totalcounts(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     totalcounts(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
 end
 
@@ -100,7 +104,7 @@ function prettyprint(counts, total)
 end
 
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     owntime(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
 end
 
@@ -110,7 +114,7 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true, warn_on_full
 end
 
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
-    sts = new_data() ? stacktraces(warn_on_full_buffer=warn_on_full_buffer) : state.last_stacktraces
+    sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     totaltime(sts; stackframe_filter=stackframe_filter, warn_on_full_buffer=warn_on_full_buffer)
 end
 
