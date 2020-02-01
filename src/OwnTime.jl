@@ -15,6 +15,11 @@ const state = OwnTimeState(nothing, nothing)
 
 new_data() = fetch()[3]
 
+function clear()
+    state.last_fetched_data = nothing
+    state.last_stacktraces = nothing
+end
+
 function fetch()
     maxlen = Profile.maxlen_data()
     len = Profile.len_data()
