@@ -5,6 +5,7 @@ export owntime, totaltime, filecontains
 using Printf
 using Profile
 using StatsBase
+using Test: @test
 
 mutable struct OwnTimeState
     last_fetched_data :: Union{Nothing, Array{UInt64,1}}
@@ -128,6 +129,18 @@ function filecontains(needle)
         haystack = string(stackframe.file)
         occursin(needle, haystack)
     end
+end
+
+function test()
+    function profile_me()
+        A = rand(200, 200, 400)
+        maximum(A)
+    end
+    Profile.init(1_000_000, 0.001)
+    Profile.clear()
+    @profile profile_me()
+    owntime(stackframe_filter=filecontains("OwnTime"))
+    totaltime(stackframe_filter=filecontains("OwnTime"))
 end
 
 end # module
