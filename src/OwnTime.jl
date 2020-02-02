@@ -5,7 +5,6 @@ export owntime, totaltime, filecontains
 using Printf
 using Profile
 using StatsBase
-using Test: @test
 
 mutable struct OwnTimeState
     last_fetched_data :: Union{Nothing, Array{UInt64,1}}
@@ -98,6 +97,9 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
         filter(stackframe_filter, stackframes)
     end
     nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
+    if isempty(nonempty_stacktraces)
+        return OwnTimeCounts([], 0)
+    end
     count_dict = countmap(reduce(vcat, first.(nonempty_stacktraces)))
     OwnTimeCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
 end
@@ -111,6 +113,9 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
+    if isempty(filtered_stacktraces)
+        return OwnTimeCounts([], 0)
+    end
     count_dict = countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
     OwnTimeCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
 end
@@ -120,18 +125,6 @@ function filecontains(needle)
         haystack = string(stackframe.file)
         occursin(needle, haystack)
     end
-end
-
-function test()
-    function profile_me()
-        A = rand(200, 200, 400)
-        maximum(A)
-    end
-    Profile.init(1_000_000, 0.001)
-    Profile.clear()
-    @profile profile_me()
-    owntime(stackframe_filter=filecontains("OwnTime"))
-    totaltime(stackframe_filter=filecontains("OwnTime"))
 end
 
 end # module
