@@ -40,6 +40,8 @@ function backtraces(;warn_on_full_buffer=true)
     bts = Array{UInt64,1}[]
     i = 1
     for j in 1:length(profile_pointers)
+        # 0 is a sentinel value that indicates the start of a new backtrace.
+        # See the source code for `tree!` in Julia's Profile package.
         if profile_pointers[j] == 0
             push!(bts, profile_pointers[i:j-1])
             i = j+1
