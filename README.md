@@ -104,8 +104,10 @@ OwnTime merely provides an alternate view into the profiling data collected by J
 
 `totaltime` provides a view of the profiling data similar to the flat format of [`Profile.print(format=:flat)`](https://docs.julialang.org/en/v1/stdlib/Profile/#Profile.print).
 
-`owntime` is a view unique to OwnTime*, hence the name. (\* At this time, and as far as I'm aware.)
+`owntime` is a view unique to OwnTime*, hence the name.
 
-The ability to filter [StackFrames](https://docs.julialang.org/en/v1/base/stacktraces/#Base.StackTraces.StackFrame) is unique to OwnTime.
+The ability to filter [StackFrames](https://docs.julialang.org/en/v1/base/stacktraces/#Base.StackTraces.StackFrame) is unique to OwnTime*.
 
 OwnTime can take a several minutes to process large amounts of profiling data. [Profile](https://docs.julialang.org/en/v1/stdlib/Profile/) in the standard library does not have this problem.
+
+(\* At this time, and as far as I'm aware.)
