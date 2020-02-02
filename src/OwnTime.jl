@@ -1,6 +1,7 @@
 module OwnTime
 
 export owntime, totaltime, filecontains
+export framecounts, frametotal, frames
 
 using Printf
 using Profile
@@ -76,17 +77,24 @@ struct FrameCounts
     total :: Int64
 end
 
-function Base.show(io::IO, counts::FrameCounts)
-    for (i, (stackframe, count)) in enumerate(counts.counts)
-        percent_of_time = round(count / counts.total * 100)
+framecounts(fcs::FrameCounts) = fcs.counts
+
+frametotal(fcs::FrameCounts) = fcs.total
+
+frames(fcs::FrameCounts) = map(fcs -> fcs.first, fcs.counts)
+
+Base.getindex(fcs::FrameCounts, i) = framecounts(fcs)[i]
+Base.iterate(fcs::FrameCounts) = iterate(framecounts(fcs))
+Base.iterate(fcs::FrameCounts, state) = iterate(framecounts(fcs), state)
+Base.length(fcs::FrameCounts) = length(framecounts(fcs))
+
+function Base.show(io::IO, fcs::FrameCounts)
+    for (i, (stackframe, count)) in enumerate(fcs)
+        percent_of_time = round(count / frametotal(fcs) * 100)
         if percent_of_time >= 1
             @printf("%4s %3d%% => %s\n", @sprintf("[%d]", i), percent_of_time, stackframe)
         end
     end
-end
-
-function Base.getindex(counts::FrameCounts, i)
-    counts.counts[i]
 end
 
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
