@@ -71,12 +71,12 @@ function stacktraces(backtraces)
     sts
 end
 
-struct OwnTimeCounts
+struct FrameCounts
     counts :: Array{Pair{StackTraces.StackFrame,Int64},1}
     total :: Int64
 end
 
-function Base.show(io::IO, counts::OwnTimeCounts)
+function Base.show(io::IO, counts::FrameCounts)
     for (i, (stackframe, count)) in enumerate(counts.counts)
         percent_of_time = round(count / counts.total * 100)
         if percent_of_time >= 1
@@ -85,8 +85,8 @@ function Base.show(io::IO, counts::OwnTimeCounts)
     end
 end
 
-function Base.getindex(counts::OwnTimeCounts, i)
-    counts.counts[i].first
+function Base.getindex(counts::FrameCounts, i)
+    counts.counts[i]
 end
 
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
@@ -100,10 +100,10 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
     end
     nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
     if isempty(nonempty_stacktraces)
-        return OwnTimeCounts([], 0)
+        return FrameCounts([], 0)
     end
     count_dict = countmap(reduce(vcat, first.(nonempty_stacktraces)))
-    OwnTimeCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
+    FrameCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
@@ -116,10 +116,10 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
         filter(stackframe_filter, stackframes)
     end
     if isempty(filtered_stacktraces)
-        return OwnTimeCounts([], 0)
+        return FrameCounts([], 0)
     end
     count_dict = countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
-    OwnTimeCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
+    FrameCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
 function filecontains(needle)
