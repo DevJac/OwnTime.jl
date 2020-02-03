@@ -120,7 +120,7 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
-    framecounts = countmap(reduce(vcat, collect.(Set.(filtered_stacktraces)), init=[]))
+    framecounts = countmap(reduce(vcat, collect.(unique.(filtered_stacktraces)), init=[]))
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
