@@ -51,24 +51,7 @@ julia> totaltime()
  [9]  63% => fill_array! at RNGs.jl:465 [inlined]
 [10]  63% => dsfmt_fill_array_close_open!(::Random.DSFMT.DSFMT_state, ::Ptr{Float64}, ::Int64) at DSFMT.jl:95
 [11]  14% => myfunc() at mycode.jl:3
-[12]  14% => _maximum at reducedim.jl:656 [inlined]
-[13]  14% => _mapreduce(::typeof(identity), ::typeof(max), ::IndexLinear, ::Array{Float64,3}) at reduce.jl:316
-[14]  14% => mapreduce at reducedim.jl:307 [inlined]
-[15]  14% => #maximum#591 at reducedim.jl:652 [inlined]
-[16]  14% => maximum at reducedim.jl:652 [inlined]
-[17]  14% => _maximum at reducedim.jl:657 [inlined]
-[18]  14% => _mapreduce_dim at reducedim.jl:312 [inlined]
-[19]  14% => _fast at reduce.jl:454 [inlined]
-[20]  14% => #mapreduce#584 at reducedim.jl:307 [inlined]
-[21]  11% => mapreduce_impl(::typeof(identity), ::typeof(max), ::Array{Float64,3}, ::Int64, ::Int64) at reduce.jl:488
-[22]   8% => rand(::Type{Float64}, ::Tuple{Int64,Int64,Int64}) at Random.jl:289
-[23]   8% => rand at Random.jl:288 [inlined]
-[24]   8% => Array at boot.jl:421 [inlined]
-[25]   8% => Array at boot.jl:415 [inlined]
-[26]   8% => Array at boot.jl:408 [inlined]
-[27]   3% => mapreduce_impl(::typeof(identity), ::typeof(max), ::Array{Float64,3}, ::Int64, ::Int64) at reduce.jl:486
-[28]   1% => != at float.jl:456 [inlined]
-[29]   1% => isnan at float.jl:535 [inlined]
+    ...
 ```
 
 ## `owntime` vs `totaltime`
