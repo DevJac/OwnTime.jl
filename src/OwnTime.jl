@@ -63,8 +63,10 @@ function stacktraces(;warn_on_full_buffer=true)
 end
 
 function stacktraces(backtraces)
+    # Lookups are very slow, so we will lookup each unique pointer only once.
+    lookups = Dict(p => StackTraces.lookup(p) for p in unique(reduce(vcat, backtraces, init=[])))
     sts = map(backtraces) do backtrace
-        filter(reduce(vcat, StackTraces.lookup.(backtrace))) do stackframe
+        filter(reduce(vcat, map(p -> lookups[p], backtrace))) do stackframe
             stackframe.from_c == false
         end
     end
