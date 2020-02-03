@@ -32,7 +32,7 @@ We can now view our profiling data using `owntime` or `totaltime`:
 
 ```julia
 julia> owntime()
- [1]  63% => dsfmt_fill_array_close_open!(::Random.DSFMT.DSFMT_state, ::Ptr{Float64}, ::Int64) at DSFMT.jl:95
+ [1]  63% => dsfmt_fill_array_close_open!(::Random.DSFMT.DSFMT_state, ::Ptr{Float64}, ...) at DSFMT.jl:95
  [2]  13% => _fast at reduce.jl:454 [inlined]
  [3]  11% => eval(::Module, ::Any) at boot.jl:330
  [4]   8% => Array at boot.jl:408 [inlined]
