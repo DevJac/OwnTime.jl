@@ -5,11 +5,24 @@ export framecounts, frametotal, frames
 
 using Printf
 using Profile
-using StatsBase
+
+const StackFrame = StackTraces.StackFrame
+
+function countmap(iter)
+    result = Dict{eltype(iter), Int64}()
+    for i in iter
+        if haskey(result, i)
+            result[i] += 1
+        else
+            result[i] = 1
+        end
+    end
+    result
+end
 
 mutable struct OwnTimeState
     last_fetched_data :: Union{Nothing, Array{UInt64,1}}
-    last_stacktraces :: Union{Nothing, Array{Array{StackTraces.StackFrame,1},1}}
+    last_stacktraces :: Union{Nothing, Array{Array{StackFrame,1},1}}
 end
 
 const state = OwnTimeState(nothing, nothing)
@@ -73,7 +86,7 @@ function stacktraces(backtraces)
 end
 
 struct FrameCounts
-    counts :: Array{Pair{StackTraces.StackFrame,Int64},1}
+    counts :: Array{Pair{StackFrame,Int64},1}
     total :: Int64
 end
 
@@ -107,7 +120,7 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
         filter(stackframe_filter, stackframes)
     end
     nonempty_stacktraces = filter(!isempty, filtered_stacktraces)
-    framecounts = countmap(reduce(vcat, first.(nonempty_stacktraces), init=[]))
+    framecounts = countmap(reduce(vcat, first.(nonempty_stacktraces), init=StackFrame[]))
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
@@ -120,7 +133,7 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
-    framecounts = countmap(reduce(vcat, collect.(unique.(filtered_stacktraces)), init=[]))
+    framecounts = countmap(reduce(vcat, collect.(unique.(filtered_stacktraces)), init=StackFrame[]))
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
