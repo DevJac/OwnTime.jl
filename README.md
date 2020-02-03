@@ -47,9 +47,7 @@ julia> totaltime()
  [5]  72% => myfunc() at mycode.jl:2
  [6]  72% => rand at Random.jl:277 [inlined]
  [7]  63% => rand(::Type{Float64}, ::Tuple{Int64,Int64,Int64}) at gcutils.jl:91
- [8]  63% => rand!(::Random.MersenneTwister, ::Random.UnsafeView{Float64}, ::Random.SamplerTrivial{Random.CloseOpen01{Float64},Float64}) at RNGs.jl:491
- [9]  63% => fill_array! at RNGs.jl:465 [inlined]
-[10]  63% => dsfmt_fill_array_close_open!(::Random.DSFMT.DSFMT_state, ::Ptr{Float64}, ::Int64) at DSFMT.jl:95
+    ...
 [11]  14% => myfunc() at mycode.jl:3
     ...
 ```
