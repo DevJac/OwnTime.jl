@@ -75,7 +75,7 @@ julia> owntime(stackframe_filter=stackframe -> stackframe.func == :myfunc)
  [2]  14% => myfunc() at mycode.jl:3
 ```
 
-It's now clear that 72% of the time was spent on line 2 of our code, and 14% on line 3. The rest of the time was spent on overhead related to Julia and profiling; for such a small example a relatively large amount of time in spent on that overhead.
+It's now clear that 72% of the time was spent on line 2 of our code, and 14% on line 3. The rest of the time was spent on overhead related to Julia and profiling; for such a small example a relatively large amount of time is spent on that overhead.
 
 `stackframe_filter` should be passed a function that accepts a single [`StackFrame`](https://docs.julialang.org/en/v1/base/stacktraces/#Base.StackTraces.StackFrame) and returns `true` if that StackFrame should be included.
 
