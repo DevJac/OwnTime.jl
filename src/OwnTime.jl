@@ -107,11 +107,8 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
         filter(stackframe_filter, stackframes)
     end
     nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
-    if isempty(nonempty_stacktraces)
-        return FrameCounts([], 0)
-    end
-    count_dict = countmap(reduce(vcat, first.(nonempty_stacktraces)))
-    FrameCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
+    framecounts = countmap(reduce(vcat, first.(nonempty_stacktraces), init=[]))
+    FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
@@ -123,11 +120,8 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
-    if isempty(filtered_stacktraces)
-        return FrameCounts([], 0)
-    end
-    count_dict = countmap(reduce(vcat, collect.(Set.(filtered_stacktraces))))
-    FrameCounts(sort(collect(count_dict), by=pair -> pair.second, rev=true), length(stacktraces))
+    framecounts = countmap(reduce(vcat, collect.(Set.(filtered_stacktraces)), init=[]))
+    FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
 function filecontains(needle)
