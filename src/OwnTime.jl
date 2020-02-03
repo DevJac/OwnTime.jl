@@ -48,9 +48,7 @@ function backtraces(;warn_on_full_buffer=true)
             i = j+1
         end
     end
-    filter(bts) do bt
-        length(bt) > 0
-    end
+    filter(!isempty, bts)
 end
 
 function stacktraces(;warn_on_full_buffer=true)
@@ -108,7 +106,7 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
     filtered_stacktraces = map(stacktraces) do stackframes
         filter(stackframe_filter, stackframes)
     end
-    nonempty_stacktraces = filter(a -> length(a) > 0, filtered_stacktraces)
+    nonempty_stacktraces = filter(!isempty, filtered_stacktraces)
     framecounts = countmap(reduce(vcat, first.(nonempty_stacktraces), init=[]))
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
