@@ -105,7 +105,7 @@ function Base.show(io::IO, fcs::FrameCounts)
     for (i, (stackframe, count)) in enumerate(fcs)
         percent_of_time = round(count / frametotal(fcs) * 100)
         if percent_of_time >= 1
-            @printf("%4s %3d%% => %s\n", @sprintf("[%d]", i), percent_of_time, stackframe)
+            @printf(io, "%4s %3d%% => %s\n", @sprintf("[%d]", i), percent_of_time, stackframe)
         end
     end
 end
