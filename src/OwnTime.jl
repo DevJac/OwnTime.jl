@@ -21,8 +21,8 @@ function countmap(iter)
 end
 
 mutable struct OwnTimeState
-    last_fetched_data :: Union{Nothing, Array{UInt64,1}}
-    last_stacktraces :: Union{Nothing, Array{Array{StackFrame,1},1}}
+    last_fetched_data :: Union{Nothing, Vector{UInt64}}
+    last_stacktraces :: Union{Nothing, Vector{Vector{StackFrame}}}
 end
 
 const state = OwnTimeState(nothing, nothing)
@@ -79,7 +79,7 @@ function backtraces(;warn_on_full_buffer=true)
                  before your program finished. To profile for longer runs, call
                  `Profile.init()` with a larger buffer and/or larger delay."""
     end
-    bts = Array{UInt64,1}[]
+    bts = Vector{UInt64}[]
     i = 1
     for j in 1:length(profile_pointers)
         # 0 is a sentinel value that indicates the start of a new backtrace.
@@ -123,7 +123,7 @@ function stacktraces(backtraces)
 end
 
 struct FrameCounts
-    counts :: Array{Pair{StackFrame,Int64},1}
+    counts :: Vector{Pair{StackFrame,Int64}}
     total :: Int64
 end
 
