@@ -29,11 +29,27 @@ const state = OwnTimeState(nothing, nothing)
 
 new_data() = fetch()[3]
 
+"""
+    clear()
+
+OwnTime has an internal cache for performance. Clear that cache.
+
+See also: [`Profile.clear`](@ref)
+"""
 function clear()
     state.last_fetched_data = nothing
     state.last_stacktraces = nothing
 end
 
+"""
+    fetch()
+
+Return a 3-tuple of the form `(instruction_pointers, is_profile_buffer_full, is_there_new_data)`.
+
+This function is primarily for internal use.
+
+See also: [`Profile.fetch`](@ref)
+"""
 function fetch()
     maxlen = Profile.maxlen_data()
     len = Profile.len_data()
@@ -44,6 +60,18 @@ function fetch()
     return data, len == maxlen, new_data
 end
 
+"""
+    backtraces(;warn_on_full_buffer=true)
+
+Return an array of backtraces. A backtrace is an array of instruction pointers.
+
+This function is primarily for internal use, try calling `OwnTime.stacktraces()` instead.
+
+This function may give a warning if Julia's profiling buffer is full.
+This warning can be disabled with the relative function parameter.
+
+See also: [`backtrace`](@ref)
+"""
 function backtraces(;warn_on_full_buffer=true)
     profile_pointers, full_buffer, _new_profile_pointers = fetch()
     if warn_on_full_buffer && full_buffer
@@ -64,6 +92,15 @@ function backtraces(;warn_on_full_buffer=true)
     filter(!isempty, bts)
 end
 
+"""
+    stacktraces([backtraces]; warn_on_full_buffer=true)
+
+Return an array of `StackTrace`s. A `StackTrace` is an array of `StackFrame`s.
+
+This function may take several minutes if you have a large profile buffer.
+
+See also: [`stacktrace`](@ref), [`StackTraces.StackTrace`](@ref), [`StackTraces.StackFrame`](@ref)
+"""
 function stacktraces(;warn_on_full_buffer=true)
     if !new_data() && !isnothing(state.last_stacktraces)
         state.last_stacktraces
@@ -110,6 +147,19 @@ function Base.show(io::IO, fcs::FrameCounts)
     end
 end
 
+"""
+    owntime([stacktraces]; stackframe_filter, warn_on_full_buffer=true)
+
+Count the time spent on each `StackFrame` *excluding* its sub-calls.
+
+If supplied, `stackframe_filter` should be a function that accepts a single `StackFrame`
+and returns `true` if it should be included in the counts.
+
+More advance filtering my by done by preprocessing the `StackTrace`s from
+`OwnTime.stacktraces()` and then passing those `StackTrace`s to this function.
+
+See also: [`OwnTime.stacktraces`](@ref) [`StackTraces.StackFrame`](@ref)
+"""
 function owntime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     owntime(sts; stackframe_filter=stackframe_filter)
@@ -124,6 +174,19 @@ function owntime(stacktraces; stackframe_filter=stackframe -> true)
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
+"""
+    totaltime([stacktraces]; stackframe_filter, warn_on_full_buffer=true)
+
+Count the time spent on each `StackFrame` *including* its sub-calls.
+
+If supplied, `stackframe_filter` should be a function that accepts a single `StackFrame`
+and returns `true` if it should be included in the counts.
+
+More advance filtering my by done by preprocessing the `StackTrace`s from
+`OwnTime.stacktraces()` and then passing those `StackTrace`s to this function.
+
+See also: [`OwnTime.stacktraces`](@ref) [`StackTraces.StackFrame`](@ref)
+"""
 function totaltime(;stackframe_filter=stackframe -> true, warn_on_full_buffer=true)
     sts = stacktraces(warn_on_full_buffer=warn_on_full_buffer)
     totaltime(sts; stackframe_filter=stackframe_filter)
@@ -137,6 +200,25 @@ function totaltime(stacktraces; stackframe_filter=stackframe -> true)
     FrameCounts(sort(collect(framecounts), by=pair -> pair.second, rev=true), length(stacktraces))
 end
 
+"""
+    filecontains(needle)
+
+A `StackFrame` filter that returns `true` if the given `StackFrame` has `needle` in its file path.
+
+# Example
+```julia-repl
+julia> stackframe = stacktrace()[1]
+top-level scope at REPL[6]:1
+
+julia> stackframe.file
+Symbol("REPL[6]")
+
+julia> filecontains("REPL")(stackframe)
+true
+```
+
+See also: [`StackTraces.StackFrame`](@ref)
+"""
 function filecontains(needle)
     function (stackframe)
         haystack = string(stackframe.file)
