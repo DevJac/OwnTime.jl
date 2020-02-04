@@ -1,4 +1,4 @@
-# OwnTime
+# OwnTime.jl
 
 OwnTime provides two additional ways to view [Julia's Profile](https://docs.julialang.org/en/v1/manual/profile/) data.
 
