@@ -21,13 +21,10 @@ function countmap(iter)
 end
 
 mutable struct OwnTimeState
-    last_fetched_data :: Union{Nothing, Vector{UInt64}}
-    last_stacktraces :: Union{Nothing, Vector{Vector{StackFrame}}}
+    lookups :: Dict{UInt64, Vector{StackFrame}}
 end
 
-const state = OwnTimeState(nothing, nothing)
-
-new_data() = fetch()[3]
+const state = OwnTimeState(Dict{UInt64, Vector{StackFrame}}())
 
 """
     clear()
@@ -37,14 +34,13 @@ OwnTime has an internal cache for performance. Clear that cache.
 See also: [`Profile.clear`](@ref)
 """
 function clear()
-    state.last_fetched_data = nothing
-    state.last_stacktraces = nothing
+    state.lookups = Dict{UInt64, Vector{StackFrame}}()
 end
 
 """
     fetch()
 
-Return a 3-tuple of the form `(instruction_pointers, is_profile_buffer_full, is_there_new_data)`.
+Return a 2-tuple of the form `(instruction_pointers, is_profile_buffer_full)`.
 
 This function is primarily for internal use.
 
@@ -55,9 +51,7 @@ function fetch()
     len = Profile.len_data()
     data = Vector{UInt}(undef, len)
     GC.@preserve data unsafe_copyto!(pointer(data), Profile.get_data_pointer(), len)
-    new_data = data != state.last_fetched_data
-    state.last_fetched_data = data
-    return data, len == maxlen, new_data
+    return data, len == maxlen
 end
 
 """
@@ -73,7 +67,7 @@ This warning can be disabled with the relative function parameter.
 See also: [`backtrace`](@ref)
 """
 function backtraces(;warn_on_full_buffer=true)
-    profile_pointers, full_buffer, _new_profile_pointers = fetch()
+    profile_pointers, full_buffer = fetch()
     if warn_on_full_buffer && full_buffer
         @warn """The profile data buffer is full; profiling probably terminated
                  before your program finished. To profile for longer runs, call
@@ -93,6 +87,24 @@ function backtraces(;warn_on_full_buffer=true)
 end
 
 """
+    lookup(p::UInt64)
+
+Similar to `StackTraces.lookup`, but internally caches lookup results for performance.
+
+Cache can be cleared with `OwnTime.clear()`.
+
+This function is for internal use.
+
+See also: [`StackTraces.lookup`](@ref) [`OwnTime.clear`](@ref)
+"""
+function lookup(p::UInt64)
+    if !haskey(state.lookups, p)
+        state.lookups[p] = StackTraces.lookup(p)
+    end
+    state.lookups[p]
+end
+
+"""
     stacktraces([backtraces]; warn_on_full_buffer=true)
 
 Return an array of `StackTrace`s. A `StackTrace` is an array of `StackFrame`s.
@@ -102,24 +114,16 @@ This function may take several minutes if you have a large profile buffer.
 See also: [`stacktrace`](@ref), [`StackTraces.StackTrace`](@ref), [`StackTraces.StackFrame`](@ref)
 """
 function stacktraces(;warn_on_full_buffer=true)
-    if !new_data() && !isnothing(state.last_stacktraces)
-        state.last_stacktraces
-    else
-        bts = backtraces(warn_on_full_buffer=warn_on_full_buffer)
-        stacktraces(bts)
-    end
+    bts = backtraces(warn_on_full_buffer=warn_on_full_buffer)
+    stacktraces(bts)
 end
 
 function stacktraces(backtraces)
-    # Lookups are very slow, so we will lookup each unique pointer only once.
-    lookups = Dict(p => StackTraces.lookup(p) for p in unique(reduce(vcat, backtraces, init=[])))
-    sts = map(backtraces) do backtrace
-        filter(reduce(vcat, map(p -> lookups[p], backtrace))) do stackframe
+    map(backtraces) do backtrace
+        filter(reduce(vcat, lookup.(backtrace))) do stackframe
             stackframe.from_c == false
         end
     end
-    state.last_stacktraces = sts
-    sts
 end
 
 struct FrameCounts
@@ -135,7 +139,7 @@ frames(fcs::FrameCounts) = map(fcs -> fcs.first, fcs.counts)
 
 Base.getindex(fcs::FrameCounts, i) = framecounts(fcs)[i]
 Base.iterate(fcs::FrameCounts) = iterate(framecounts(fcs))
-Base.iterate(fcs::FrameCounts, state) = iterate(framecounts(fcs), state)
+Base.iterate(fcs::FrameCounts, s) = iterate(framecounts(fcs), s)
 Base.length(fcs::FrameCounts) = length(framecounts(fcs))
 
 function Base.show(io::IO, fcs::FrameCounts)
