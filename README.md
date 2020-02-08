@@ -9,8 +9,8 @@ Use [Julia's package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/) to i
 In [the Julia REPL](https://docs.julialang.org/en/v1/stdlib/REPL/) do:
 
 ```julia
-julia> using Pkg
-julia> Pkg.add("OwnTime")
+using Pkg
+Pkg.add("OwnTime")
 ```
 
 # Basic Usage
