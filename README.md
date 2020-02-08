@@ -2,6 +2,17 @@
 
 OwnTime provides two additional ways to view [Julia's Profile](https://docs.julialang.org/en/v1/manual/profile/) data.
 
+# Installation
+
+Use [Julia's package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/) to install.
+
+In [the Julia REPL](https://docs.julialang.org/en/v1/stdlib/REPL/) do:
+
+```julia
+julia> using Pkg
+julia> Pkg.add("OwnTime")
+```
+
 # Basic Usage
 
 Let's say we have the following code in `mycode.jl`:
