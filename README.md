@@ -2,6 +2,12 @@
 
 OwnTime provides two additional ways to view [Julia's Profile](https://docs.julialang.org/en/v1/manual/profile/) data.
 
+# State of OwnTime
+
+I consider OwnTime to be feature complete. If there have not been any recent commits, it's not because OwnTime is abandoned, it's because OwnTime is complete.
+
+Furthermore, OwnTime consists of less than 200 lines of code in a single file, and the code is documented. If worse comes to worse, you could maintain it yourself without much effort.
+
 # Installation
 
 Use [Julia's package manager](https://docs.julialang.org/en/v1/stdlib/Pkg/) to install.
